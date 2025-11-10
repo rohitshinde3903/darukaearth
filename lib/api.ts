@@ -4,10 +4,19 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://daruka.python
 const getUserEmail = () => {
   if (typeof window !== 'undefined') {
     const userData = localStorage.getItem('user');
+    console.log('getUserEmail - Raw localStorage data:', userData);
+    
     if (userData) {
       try {
         const user = JSON.parse(userData);
-        console.log('getUserEmail - Found user:', user.email);
+        console.log('getUserEmail - Parsed user object:', user);
+        console.log('getUserEmail - User email:', user.email);
+        
+        if (!user.email) {
+          console.error('getUserEmail - No email property found in user object!');
+          console.error('getUserEmail - User object keys:', Object.keys(user));
+        }
+        
         return user.email;
       } catch (e) {
         console.error('Error parsing user data:', e);
@@ -15,7 +24,7 @@ const getUserEmail = () => {
       }
     }
   }
-  console.log('getUserEmail - No user found');
+  console.log('getUserEmail - No user found in localStorage');
   return null;
 };
 

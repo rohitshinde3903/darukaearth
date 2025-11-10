@@ -33,17 +33,29 @@ export default function Home() {
     setError('');
 
     try {
-      const response = await apiClient.get('/api/accounts/api_login/');
+      const response = await apiClient.get('/api/accounts/api_login/', false); // Don't add user_email for login
 
       if (response.ok) {
         const users = await response.json();
+        console.log('All users:', users);
+        
         const user = users.find(
           (u: any) => u.email === formData.email
         );
 
+        console.log('Found user:', user);
+
         if (user) {
+          // Store the complete user object with email
+          const userToStore = {
+            id: user.id,
+            email: user.email,
+            username: user.username,
+          };
+          console.log('Storing user:', userToStore);
+          localStorage.setItem('user', JSON.stringify(userToStore));
+          
           setSuccess('Login successful!');
-          localStorage.setItem('user', JSON.stringify(user));
           setTimeout(() => {
             router.push('/home');
           }, 500);
