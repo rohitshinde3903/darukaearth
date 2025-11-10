@@ -107,10 +107,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         created_by_email = self.request.query_params.get('user_email')
         
-        if created_by_email:
-            return Project.objects.filter(created_by__email=created_by_email).order_by('-created_at')
+        print(f"DEBUG ProjectViewSet: Query params: {self.request.query_params}")
+        print(f"DEBUG ProjectViewSet: user_email from params: {created_by_email}")
         
-        return Project.objects.all().order_by('-created_at')
+        if created_by_email:
+            queryset = Project.objects.filter(created_by__email=created_by_email).order_by('-created_at')
+            print(f"DEBUG ProjectViewSet: Filtered projects count: {queryset.count()}")
+            return queryset
+        
+        # Return empty queryset if no user_email provided (more secure)
+        print("DEBUG ProjectViewSet: No user_email provided, returning empty queryset")
+        return Project.objects.none()
 
 class SiteViewSet(viewsets.ModelViewSet):
     queryset = Site.objects.all()
@@ -122,6 +129,9 @@ class SiteViewSet(viewsets.ModelViewSet):
         project_id = self.request.query_params.get('project', None)
         user_email = self.request.query_params.get('user_email', None)
         
+        print(f"DEBUG SiteViewSet: Query params: {self.request.query_params}")
+        print(f"DEBUG SiteViewSet: project_id: {project_id}, user_email: {user_email}")
+        
         # Filter by project if provided
         if project_id:
             queryset = queryset.filter(project_id=project_id)
@@ -130,12 +140,16 @@ class SiteViewSet(viewsets.ModelViewSet):
         if user_email:
             try:
                 user = User.objects.get(email=user_email)
-                # Get all projects created by this user
                 user_projects = Project.objects.filter(created_by=user)
-                # Filter sites that belong to those projects
                 queryset = queryset.filter(project__in=user_projects)
+                print(f"DEBUG SiteViewSet: Filtered sites count: {queryset.count()}")
             except User.DoesNotExist:
+                print(f"DEBUG SiteViewSet: User not found: {user_email}")
                 return Site.objects.none()
+        else:
+            # If no user_email provided, return empty for security
+            print("DEBUG SiteViewSet: No user_email provided, returning empty queryset")
+            return Site.objects.none()
         
         return queryset.order_by('-created_at')
     
