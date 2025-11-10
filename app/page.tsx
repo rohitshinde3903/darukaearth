@@ -31,17 +31,17 @@ export default function Home() {
     setLoading(true);
     setError('');
 
-    const loginUrl = `${API_URL}/api/accounts/api_login/`;
+    // Use NEW endpoint to bypass cache
+    const loginUrl = `${API_URL}/api/accounts/login/`;  // Changed from api_login/
     const loginData = {
       email: formData.email,
       password: formData.password,
     };
 
-    console.log('=== LOGIN REQUEST DEBUG ===');
+    console.log('=== LOGIN REQUEST DEBUG v2 ===');
     console.log('URL:', loginUrl);
     console.log('Method: POST');
     console.log('Data:', loginData);
-    console.log('API_URL from env:', process.env.NEXT_PUBLIC_API_URL);
 
     try {
       const response = await fetch(loginUrl, {
@@ -55,7 +55,6 @@ export default function Home() {
       console.log('Response:', {
         status: response.status,
         statusText: response.statusText,
-        method: response.type,
       });
 
       if (response.ok) {
