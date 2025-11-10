@@ -1,8 +1,11 @@
 {
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://daruka.pythonanywhere.com",
-    "NEXT_PUBLIC_MAPBOX_TOKEN": "@mapbox_token"
+  "github": {
+    "silent": false
   },
-  "buildCommand": "cd darukafrontend && npm install && npm run build",
-  "outputDirectory": "darukafrontend/.next"
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "https://daruka.pythonanywhere.com",
+      "NEXT_PUBLIC_MAPBOX_TOKEN": "pk.eyJ1Ijoicm9oaXQzOTAzIiwiYSI6ImNtaHE2aGZueTBuYWYybHIxejc3Nmowd3IifQ.MyqHcJaaCCrdXs-jKk0xGw"
+    }
+  }
 }
