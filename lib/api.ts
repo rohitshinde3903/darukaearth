@@ -7,6 +7,7 @@ const getUserEmail = () => {
     if (userData) {
       try {
         const user = JSON.parse(userData);
+        console.log('getUserEmail - Found user:', user.email);
         return user.email;
       } catch (e) {
         console.error('Error parsing user data:', e);
@@ -14,62 +15,89 @@ const getUserEmail = () => {
       }
     }
   }
+  console.log('getUserEmail - No user found');
   return null;
 };
 
 export const apiClient = {
   async get(endpoint: string, addUserEmail: boolean = true) {
-    const userEmail = getUserEmail();
-    let url = `${API_URL}${endpoint}`;
-    
-    console.log('API GET - User Email:', userEmail);
-    console.log('API GET - Original URL:', url);
-    
-    // Add user_email as query parameter for filtering
-    if (userEmail && addUserEmail) {
-      const urlObj = new URL(url);
-      if (!urlObj.searchParams.has('user_email')) {
-        urlObj.searchParams.append('user_email', userEmail);
+    try {
+      const userEmail = getUserEmail();
+      let url = `${API_URL}${endpoint}`;
+      
+      console.log('API GET - User Email:', userEmail);
+      console.log('API GET - Original endpoint:', endpoint);
+      console.log('API GET - Add user email?:', addUserEmail);
+      
+      // Add user_email as query parameter for filtering
+      if (userEmail && addUserEmail) {
+        const separator = url.includes('?') ? '&' : '?';
+        url = `${url}${separator}user_email=${encodeURIComponent(userEmail)}`;
       }
-      url = urlObj.toString();
+      
+      console.log('API GET - Final URL:', url);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('API GET - Response status:', response.status);
+      return response;
+    } catch (error) {
+      console.error('API GET - Error:', error);
+      throw error;
     }
-    
-    console.log('API GET - Final URL:', url);
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    return response;
   },
 
   async post(endpoint: string, data: any) {
-    const url = `${API_URL}${endpoint}`;
-    console.log('API POST - URL:', url);
-    console.log('API POST - Data:', data);
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return response;
+    try {
+      const url = `${API_URL}${endpoint}`;
+      console.log('API POST - URL:', url);
+      console.log('API POST - Data:', data);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      console.log('API POST - Response status:', response.status);
+      const responseData = await response.json();
+      console.log('API POST - Response data:', responseData);
+      
+      // Return a new response with the data already parsed
+      return {
+        ...response,
+        json: async () => responseData,
+      } as Response;
+    } catch (error) {
+      console.error('API POST - Error:', error);
+      throw error;
+    }
   },
 
   async delete(endpoint: string) {
-    const url = `${API_URL}${endpoint}`;
-    console.log('API DELETE - URL:', url);
-    
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    return response;
+    try {
+      const url = `${API_URL}${endpoint}`;
+      console.log('API DELETE - URL:', url);
+      
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('API DELETE - Response status:', response.status);
+      return response;
+    } catch (error) {
+      console.error('API DELETE - Error:', error);
+      throw error;
+    }
   },
 };

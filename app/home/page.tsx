@@ -40,12 +40,19 @@ export default function HomePage() {
 
   const fetchProjects = async () => {
     try {
+      console.log('Fetching projects...');
       const response = await apiClient.get('/api/projects/');
 
+      console.log('Fetch projects - Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Fetch projects - Data received:', data);
+        console.log('Fetch projects - Number of projects:', data.length);
         setProjects(data);
       } else {
+        const errorText = await response.text();
+        console.error('Fetch projects - Error response:', errorText);
         setError('Failed to fetch projects');
       }
     } catch (err) {
