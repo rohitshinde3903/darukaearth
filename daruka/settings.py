@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-i5(w&p0qnc1n9x9&-mom*jhnbgrhy^td6e$op@c5kdc8f&wjvj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['daruka.pythonanywhere.com', 'darukaearth.vercel.app', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -154,6 +154,9 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:3000',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'https://daruka.pythonanywhere.com',
+    'https://darukaearth.vercel.app/',
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True
 AUTH_USER_MODEL = 'accounts.CustomUser'
