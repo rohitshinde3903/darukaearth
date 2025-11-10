@@ -20,6 +20,8 @@ interface TimeSeriesData {
   tree_cover: number[];
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://daruka.pythonanywhere.com';
+
 export default function SiteAnalyticsPage() {
   const params = useParams();
   const router = useRouter();
@@ -34,8 +36,8 @@ export default function SiteAnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       const [summaryRes, timeSeriesRes] = await Promise.all([
-        fetch(`https://daruka.pythonanywhere.com/api/analytics/summary/?site=${params.siteId}`),
-        fetch(`https://daruka.pythonanywhere.com/api/analytics/time_series/?site=${params.siteId}`)
+        fetch(`${API_URL}/api/analytics/summary/?site=${params.siteId}`),
+        fetch(`${API_URL}/api/analytics/time_series/?site=${params.siteId}`)
       ]);
 
       if (summaryRes.ok && timeSeriesRes.ok) {
