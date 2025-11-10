@@ -39,7 +39,7 @@ export default function HomePage() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch('https://daruka.pythonanywhere.com/api/projects/', {
+      const response = await fetch('https://daruka.pythonanywhere.com/api/api/projects/', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ export default function HomePage() {
       const userData = localStorage.getItem('user');
       const user = userData ? JSON.parse(userData) : null;
 
-      const response = await fetch('https://daruka.pythonanywhere.com/api/projects/', {
+      const response = await fetch('https://daruka.pythonanywhere.com/api/api/projects/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ export default function HomePage() {
     if (!confirm('Are you sure you want to delete this project?')) return;
 
     try {
-      const response = await fetch(`https://daruka.pythonanywhere.com/api/projects/${id}/`, {
+      const response = await fetch(`https://daruka.pythonanywhere.com/api/api/projects/${id}/`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
