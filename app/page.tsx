@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://daruka.pythonanywhere.com';
 
@@ -32,14 +31,11 @@ export default function Home() {
     setLoading(true);
     setError('');
 
-    console.log('=== LOGIN ATTEMPT ===');
-    console.log('Email:', formData.email);
-    console.log('Password length:', formData.password.length);
-    console.log('API URL:', `${API_URL}/api/accounts/api_login/`);
+    console.log('Login attempt:', { email: formData.email, api: `${API_URL}/api/accounts/api_login/` });
 
     try {
       const response = await fetch(`${API_URL}/api/accounts/api_login/`, {
-        method: 'POST',
+        method: 'POST',  // Make sure it's POST
         headers: {
           'Content-Type': 'application/json',
         },
@@ -49,12 +45,11 @@ export default function Home() {
         }),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
+      console.log('Login response status:', response.status);
 
       if (response.ok) {
         const user = await response.json();
-        console.log('✓ Login successful:', user);
+        console.log('Login successful:', user);
         
         localStorage.setItem('user', JSON.stringify({
           id: user.id,
@@ -63,15 +58,17 @@ export default function Home() {
         }));
         
         setSuccess('Login successful!');
-        setTimeout(() => router.push('/home'), 500);
+        setTimeout(() => {
+          router.push('/home');
+        }, 500);
       } else {
         const errorData = await response.json();
-        console.error('✗ Login failed:', errorData);
-        setError(errorData.error || 'Invalid email or password');
+        console.error('Login failed:', errorData);
+        setError(errorData.error || 'Invalid credentials');
       }
     } catch (err) {
-      console.error('✗ Network error:', err);
-      setError('Network error. Check console for details.');
+      console.error('Login error:', err);
+      setError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -83,10 +80,16 @@ export default function Home() {
     setError('');
 
     try {
-      const response = await apiClient.post('/api/accounts/api_register/', {
-        email: formData.email,
-        username: formData.username,
-        password: formData.password,
+      const response = await fetch(`${API_URL}/api/accounts/api_register/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          username: formData.username,
+          password: formData.password,
+        }),
       });
 
       if (response.status === 201) {
@@ -99,7 +102,7 @@ export default function Home() {
       }
     } catch (err) {
       console.error('Register error:', err);
-      setError('Network error. Please check your connection.');
+      setError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -181,7 +184,7 @@ export default function Home() {
 
             <div>
               <label className="block text-gray-700 text-sm font-semibold mb-2">
-                E-mail
+                Email
               </label>
               <input
                 type="email"
@@ -218,14 +221,6 @@ export default function Home() {
             {loading ? 'Processing...' : isLogin ? 'Login' : 'Register'}
           </button>
         </form>
-
-        {isLogin && (
-          <div className="mt-4 text-center">
-            <a href="#" className="text-sm text-blue-600 hover:underline">
-              Forgot password?
-            </a>
-          </div>
-        )}
       </div>
     </div>
   );
