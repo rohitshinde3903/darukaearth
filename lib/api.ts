@@ -36,7 +36,6 @@ export const apiClient = {
       
       console.log('API GET - User Email:', userEmail);
       console.log('API GET - Original endpoint:', endpoint);
-      console.log('API GET - Add user email?:', addUserEmail);
       
       // Add user_email as query parameter for filtering
       if (userEmail && addUserEmail) {
@@ -76,14 +75,9 @@ export const apiClient = {
       });
       
       console.log('API POST - Response status:', response.status);
-      const responseData = await response.json();
-      console.log('API POST - Response data:', responseData);
       
-      // Return a new response with the data already parsed
-      return {
-        ...response,
-        json: async () => responseData,
-      } as Response;
+      // Return the response as-is, don't pre-parse it
+      return response;
     } catch (error) {
       console.error('API POST - Error:', error);
       throw error;
