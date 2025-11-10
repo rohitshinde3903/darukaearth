@@ -67,14 +67,23 @@ export default function ProjectDetailPage() {
       const userData = localStorage.getItem('user');
       const user = userData ? JSON.parse(userData) : null;
       
-      const url = `${API_URL}/api/sites/?project=${params.id}&user_email=${user?.email}`;
+      if (!user?.email) {
+        setError('User email not found');
+        return;
+      }
+      
+      const url = `${API_URL}/api/sites/?project=${params.id}&user_email=${encodeURIComponent(user.email)}`;
+      console.log('Fetching sites from:', url);
+      
       const response = await fetch(url);
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Sites data:', data);
         setSites(data.features || []);
       }
     } catch (err) {
+      console.error('Fetch sites error:', err);
       setError('Failed to fetch sites');
     }
   };

@@ -5,8 +5,13 @@ const getUserEmail = () => {
   if (typeof window !== 'undefined') {
     const userData = localStorage.getItem('user');
     if (userData) {
-      const user = JSON.parse(userData);
-      return user.email;
+      try {
+        const user = JSON.parse(userData);
+        return user.email;
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+        return null;
+      }
     }
   }
   return null;
@@ -17,11 +22,19 @@ export const apiClient = {
     const userEmail = getUserEmail();
     let url = `${API_URL}${endpoint}`;
     
+    console.log('API GET - User Email:', userEmail);
+    console.log('API GET - Original URL:', url);
+    
     // Add user_email as query parameter for filtering
-    if (userEmail && addUserEmail && !endpoint.includes('user_email=')) {
-      const separator = endpoint.includes('?') ? '&' : '?';
-      url = `${url}${separator}user_email=${encodeURIComponent(userEmail)}`;
+    if (userEmail && addUserEmail) {
+      const urlObj = new URL(url);
+      if (!urlObj.searchParams.has('user_email')) {
+        urlObj.searchParams.append('user_email', userEmail);
+      }
+      url = urlObj.toString();
     }
+    
+    console.log('API GET - Final URL:', url);
     
     const response = await fetch(url, {
       method: 'GET',
@@ -33,7 +46,11 @@ export const apiClient = {
   },
 
   async post(endpoint: string, data: any) {
-    const response = await fetch(`${API_URL}${endpoint}`, {
+    const url = `${API_URL}${endpoint}`;
+    console.log('API POST - URL:', url);
+    console.log('API POST - Data:', data);
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -44,7 +61,10 @@ export const apiClient = {
   },
 
   async delete(endpoint: string) {
-    const response = await fetch(`${API_URL}${endpoint}`, {
+    const url = `${API_URL}${endpoint}`;
+    console.log('API DELETE - URL:', url);
+    
+    const response = await fetch(url, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
