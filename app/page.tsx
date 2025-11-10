@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://daruka.pythonanywhere.com';
+
 export default function Home() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
@@ -30,7 +32,7 @@ export default function Home() {
     setError('');
 
     try {
-      const response = await fetch('https://daruka.pythonanywhere.com/api/accounts/api_login/', {
+      const response = await fetch(`${API_URL}/api/accounts/api_login/`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +60,8 @@ export default function Home() {
         setError('Login failed');
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      console.error('Login error:', err);
+      setError('Network error. Please check your connection.');
     } finally {
       setLoading(false);
     }
@@ -70,7 +73,7 @@ export default function Home() {
     setError('');
 
     try {
-      const response = await fetch('https://daruka.pythonanywhere.com/api/accounts/api_register/', {
+      const response = await fetch(`${API_URL}/api/accounts/api_register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +95,8 @@ export default function Home() {
         setError(errorData.email?.[0] || errorData.username?.[0] || 'Registration failed');
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      console.error('Register error:', err);
+      setError('Network error. Please check your connection.');
     } finally {
       setLoading(false);
     }
