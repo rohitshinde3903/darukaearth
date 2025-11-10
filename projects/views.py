@@ -81,27 +81,35 @@ def project_detail_api(request, pk):
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [permissions.AllowAny]  # Changed to AllowAny for now
+    permission_classes = [permissions.AllowAny]
     
     def perform_create(self, serializer):
-        # Get email from request data
         created_by_email = self.request.data.get('created_by')
+        
+        print(f"DEBUG: Received data: {self.request.data}")
+        print(f"DEBUG: created_by_email: {created_by_email}")
         
         if created_by_email:
             try:
                 user = User.objects.get(email=created_by_email)
+                print(f"DEBUG: Found user: {user}")
                 serializer.save(created_by=user)
             except User.DoesNotExist:
-                # If user doesn't exist, raise a validation error
-                raise ValidationError({'created_by': 'User with this email does not exist'})
+                print(f"DEBUG: User not found with email: {created_by_email}")
+                raise ValidationError({'created_by': f'User with email {created_by_email} does not exist'})
         else:
-            # If authenticated, use request.user, otherwise raise error
+            print("DEBUG: No created_by email provided")
             if self.request.user.is_authenticated:
                 serializer.save(created_by=self.request.user)
             else:
                 raise ValidationError({'created_by': 'User email is required'})
     
     def get_queryset(self):
+        created_by_email = self.request.query_params.get('user_email')
+        
+        if created_by_email:
+            return Project.objects.filter(created_by__email=created_by_email).order_by('-created_at')
+        
         return Project.objects.all().order_by('-created_at')
 
 class SiteViewSet(viewsets.ModelViewSet):
@@ -112,8 +120,23 @@ class SiteViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Site.objects.all()
         project_id = self.request.query_params.get('project', None)
+        user_email = self.request.query_params.get('user_email', None)
+        
+        # Filter by project if provided
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+        
+        # Filter by user email - only show sites from projects created by this user
+        if user_email:
+            try:
+                user = User.objects.get(email=user_email)
+                # Get all projects created by this user
+                user_projects = Project.objects.filter(created_by=user)
+                # Filter sites that belong to those projects
+                queryset = queryset.filter(project__in=user_projects)
+            except User.DoesNotExist:
+                return Site.objects.none()
+        
         return queryset.order_by('-created_at')
     
     def list(self, request, *args, **kwargs):
@@ -128,16 +151,25 @@ class SiteViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         created_by_email = self.request.data.get('created_by_email')
+        project_id = self.request.data.get('project')
         
-        if created_by_email:
+        # Verify that the project belongs to the user creating the site
+        if project_id and created_by_email:
+            try:
+                user = User.objects.get(email=created_by_email)
+                project = Project.objects.get(id=project_id, created_by=user)
+                serializer.save(created_by=user)
+            except User.DoesNotExist:
+                raise ValidationError({'created_by': 'User with this email does not exist'})
+            except Project.DoesNotExist:
+                raise ValidationError({'project': 'Project not found or you do not have permission to add sites to it'})
+        elif created_by_email:
             try:
                 user = User.objects.get(email=created_by_email)
                 serializer.save(created_by=user)
             except User.DoesNotExist:
-                # If user doesn't exist, raise a validation error
                 raise ValidationError({'created_by': 'User with this email does not exist'})
         else:
-            # If authenticated, use request.user, otherwise raise error
             if self.request.user.is_authenticated:
                 serializer.save(created_by=self.request.user)
             else:
