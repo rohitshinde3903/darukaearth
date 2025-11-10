@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://daruka.pythonanywhere.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://daruka.pythonanywhere.com/';
 
 export default function Home() {
   const router = useRouter();
