@@ -1,0 +1,6 @@
+{
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://daruka.pythonanywhere.com",
+    "NEXT_PUBLIC_MAPBOX_TOKEN": "@mapbox_token"
+  }
+}

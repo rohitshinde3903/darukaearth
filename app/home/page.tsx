@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiClient } from '@/lib/api';
 
 interface Project {
   id: number;
@@ -39,12 +40,7 @@ export default function HomePage() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch('https://daruka.pythonanywhere.com/api/projects/', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await apiClient.get('/api/projects/');
 
       if (response.ok) {
         const data = await response.json();
@@ -53,6 +49,7 @@ export default function HomePage() {
         setError('Failed to fetch projects');
       }
     } catch (err) {
+      console.error('Fetch error:', err);
       setError('Network error while fetching projects');
     }
   };
@@ -66,15 +63,9 @@ export default function HomePage() {
       const userData = localStorage.getItem('user');
       const user = userData ? JSON.parse(userData) : null;
 
-      const response = await fetch('https://daruka.pythonanywhere.com/api/projects/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...projectForm,
-          created_by: user?.email,
-        }),
+      const response = await apiClient.post('/api/projects/', {
+        ...projectForm,
+        created_by: user?.email,
       });
 
       if (response.status === 201) {
@@ -92,6 +83,7 @@ export default function HomePage() {
         );
       }
     } catch (err) {
+      console.error('Create error:', err);
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
@@ -102,12 +94,7 @@ export default function HomePage() {
     if (!confirm('Are you sure you want to delete this project?')) return;
 
     try {
-      const response = await fetch(`https://daruka.pythonanywhere.com/api/projects/${id}/`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await apiClient.delete(`/api/projects/${id}/`);
 
       if (response.status === 204) {
         setSuccess('Project deleted successfully!');
@@ -117,6 +104,7 @@ export default function HomePage() {
         setError('Failed to delete project');
       }
     } catch (err) {
+      console.error('Delete error:', err);
       setError('Network error while deleting project');
     }
   };

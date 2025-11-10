@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiClient } from '@/lib/api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://daruka.pythonanywhere.com/';
 
@@ -32,12 +33,7 @@ export default function Home() {
     setError('');
 
     try {
-      const response = await fetch(`${API_URL}/api/accounts/api_login/`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await apiClient.get('/api/accounts/api_login/');
 
       if (response.ok) {
         const users = await response.json();
@@ -47,9 +43,7 @@ export default function Home() {
 
         if (user) {
           setSuccess('Login successful!');
-          // Store user data or token here
           localStorage.setItem('user', JSON.stringify(user));
-          // Redirect to home page
           setTimeout(() => {
             router.push('/home');
           }, 500);
@@ -73,20 +67,13 @@ export default function Home() {
     setError('');
 
     try {
-      const response = await fetch(`${API_URL}/api/accounts/api_register/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          username: formData.username,
-          password: formData.password,
-        }),
+      const response = await apiClient.post('/api/accounts/api_register/', {
+        email: formData.email,
+        username: formData.username,
+        password: formData.password,
       });
 
       if (response.status === 201) {
-        const data = await response.json();
         setSuccess('Registration successful! Please login.');
         setIsLogin(true);
         setFormData({ email: '', username: '', password: '' });
