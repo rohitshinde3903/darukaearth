@@ -64,7 +64,12 @@ export default function ProjectDetailPage() {
 
   const fetchSites = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/sites/?project=${params.id}`);
+      const userData = localStorage.getItem('user');
+      const user = userData ? JSON.parse(userData) : null;
+      
+      const url = `${API_URL}/api/sites/?project=${params.id}&user_email=${user?.email}`;
+      const response = await fetch(url);
+      
       if (response.ok) {
         const data = await response.json();
         setSites(data.features || []);

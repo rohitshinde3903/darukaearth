@@ -63,10 +63,18 @@ export default function HomePage() {
       const userData = localStorage.getItem('user');
       const user = userData ? JSON.parse(userData) : null;
 
-      const response = await apiClient.post('/api/projects/', {
+      console.log('Creating project with data:', {
         ...projectForm,
         created_by: user?.email,
       });
+
+      const response = await apiClient.post('/api/projects/', {
+        name: projectForm.name,
+        description: projectForm.description,
+        created_by: user?.email,
+      });
+
+      console.log('Response status:', response.status);
 
       if (response.status === 201) {
         setSuccess('Project created successfully!');
@@ -76,10 +84,13 @@ export default function HomePage() {
         setTimeout(() => setSuccess(''), 3000);
       } else {
         const errorData = await response.json();
+        console.error('Error response:', errorData);
         setError(
+          errorData.created_by?.[0] ||
           errorData.name?.[0] ||
-            errorData.description?.[0] ||
-            'Failed to create project'
+          errorData.description?.[0] ||
+          JSON.stringify(errorData) ||
+          'Failed to create project'
         );
       }
     } catch (err) {
