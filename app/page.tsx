@@ -27,12 +27,12 @@ export default function Home() {
   };
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // This is critical - prevents default form submission
     setLoading(true);
     setError('');
 
     // Use NEW endpoint to bypass cache
-    const loginUrl = `${API_URL}/api/accounts/login/`;  // Changed from api_login/
+    const loginUrl = `${API_URL}/api/accounts/login/`;
     const loginData = {
       email: formData.email,
       password: formData.password,
