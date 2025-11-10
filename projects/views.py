@@ -118,6 +118,24 @@ class ProjectViewSet(viewsets.ModelViewSet):
         # Return empty queryset if no user_email provided (more secure)
         print("DEBUG ProjectViewSet: No user_email provided, returning empty queryset")
         return Project.objects.none()
+    
+    def destroy(self, request, *args, **kwargs):
+        """Handle project deletion"""
+        try:
+            instance = self.get_object()
+            print(f"DEBUG: Attempting to delete project {instance.id} - {instance.name}")
+            print(f"DEBUG: Created by: {instance.created_by.email}")
+            
+            # Instead of actually deleting, mark as inactive if you have that field
+            # Or just delete it
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            print(f"DEBUG: Delete error: {str(e)}")
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class SiteViewSet(viewsets.ModelViewSet):
     queryset = Site.objects.all()
