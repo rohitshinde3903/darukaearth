@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://daruka.pythonanywhere.com/';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://daruka.pythonanywhere.com';
 
 export default function Home() {
   const router = useRouter();
@@ -32,42 +32,46 @@ export default function Home() {
     setLoading(true);
     setError('');
 
+    console.log('=== LOGIN ATTEMPT ===');
+    console.log('Email:', formData.email);
+    console.log('Password length:', formData.password.length);
+    console.log('API URL:', `${API_URL}/api/accounts/api_login/`);
+
     try {
-      const response = await apiClient.get('/api/accounts/api_login/', false); // Don't add user_email for login
+      const response = await fetch(`${API_URL}/api/accounts/api_login/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
 
       if (response.ok) {
-        const users = await response.json();
-        console.log('All users:', users);
+        const user = await response.json();
+        console.log('✓ Login successful:', user);
         
-        const user = users.find(
-          (u: any) => u.email === formData.email
-        );
-
-        console.log('Found user:', user);
-
-        if (user) {
-          // Store the complete user object with email
-          const userToStore = {
-            id: user.id,
-            email: user.email,
-            username: user.username,
-          };
-          console.log('Storing user:', userToStore);
-          localStorage.setItem('user', JSON.stringify(userToStore));
-          
-          setSuccess('Login successful!');
-          setTimeout(() => {
-            router.push('/home');
-          }, 500);
-        } else {
-          setError('Invalid credentials');
-        }
+        localStorage.setItem('user', JSON.stringify({
+          id: user.id,
+          email: user.email,
+          username: user.username,
+        }));
+        
+        setSuccess('Login successful!');
+        setTimeout(() => router.push('/home'), 500);
       } else {
-        setError('Login failed');
+        const errorData = await response.json();
+        console.error('✗ Login failed:', errorData);
+        setError(errorData.error || 'Invalid email or password');
       }
     } catch (err) {
-      console.error('Login error:', err);
-      setError('Network error. Please check your connection.');
+      console.error('✗ Network error:', err);
+      setError('Network error. Check console for details.');
     } finally {
       setLoading(false);
     }

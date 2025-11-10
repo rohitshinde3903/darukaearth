@@ -103,4 +103,16 @@ export const apiClient = {
       throw error;
     }
   },
+
+  // Add a login method for better organization
+  async login(email: string, password: string) {
+    const response = await fetch(`${API_URL}/api/accounts/api_login/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+    return response;
+  },
 };
