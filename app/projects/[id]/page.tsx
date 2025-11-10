@@ -50,7 +50,7 @@ export default function ProjectDetailPage() {
 
   const fetchProject = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/projects/${params.id}/`);
+      const response = await fetch(`https://daruka.pythonanywhere.com/api/projects/${params.id}/`);
       if (response.ok) {
         setProject(await response.json());
       }
@@ -63,7 +63,7 @@ export default function ProjectDetailPage() {
 
   const fetchSites = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/sites/?project=${params.id}`);
+      const response = await fetch(`https://daruka.pythonanywhere.com/api/sites/?project=${params.id}`);
       if (response.ok) {
         const data = await response.json();
         setSites(data.features || []);
@@ -85,7 +85,7 @@ export default function ProjectDetailPage() {
     if (!confirm('Are you sure you want to delete this site?')) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/api/sites/${siteId}/`, {
+      const response = await fetch(`https://daruka.pythonanywhere.com/api/sites/${siteId}/`, {
         method: 'DELETE',
       });
 
@@ -462,7 +462,7 @@ function CreateSiteModal({ projectId, onClose, onSuccess }: { projectId: string;
     const user = userData ? JSON.parse(userData) : null;
 
     try {
-      const response = await fetch('http://localhost:8000/api/sites/', {
+      const response = await fetch('https://daruka.pythonanywhere.com/api/sites/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
