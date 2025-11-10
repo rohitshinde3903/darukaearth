@@ -34,8 +34,8 @@ export default function SiteAnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       const [summaryRes, timeSeriesRes] = await Promise.all([
-        fetch(`https://daruka.pythonanywhere.com/api/api/analytics/summary/?site=${params.siteId}`),
-        fetch(`https://daruka.pythonanywhere.com/api/api/analytics/time_series/?site=${params.siteId}`)
+        fetch(`https://daruka.pythonanywhere.com/api/analytics/summary/?site=${params.siteId}`),
+        fetch(`https://daruka.pythonanywhere.com/api/analytics/time_series/?site=${params.siteId}`)
       ]);
 
       if (summaryRes.ok && timeSeriesRes.ok) {
