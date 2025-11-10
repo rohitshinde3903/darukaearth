@@ -31,26 +31,35 @@ export default function Home() {
     setLoading(true);
     setError('');
 
-    console.log('Login attempt:', { email: formData.email, api: `${API_URL}/api/accounts/api_login/` });
+    const loginUrl = `${API_URL}/api/accounts/api_login/`;
+    const loginData = {
+      email: formData.email,
+      password: formData.password,
+    };
+
+    console.log('=== LOGIN REQUEST DEBUG ===');
+    console.log('URL:', loginUrl);
+    console.log('Method: POST');
+    console.log('Data:', loginData);
+    console.log('API_URL from env:', process.env.NEXT_PUBLIC_API_URL);
 
     try {
-      const response = await fetch(`${API_URL}/api/accounts/api_login/`, {
-        method: 'POST',  // Make sure it's POST
+      const response = await fetch(loginUrl, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
+        body: JSON.stringify(loginData),
       });
 
-      console.log('Login response status:', response.status);
+      console.log('Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        method: response.type,
+      });
 
       if (response.ok) {
         const user = await response.json();
-        console.log('Login successful:', user);
-        
         localStorage.setItem('user', JSON.stringify({
           id: user.id,
           email: user.email,
@@ -58,12 +67,9 @@ export default function Home() {
         }));
         
         setSuccess('Login successful!');
-        setTimeout(() => {
-          router.push('/home');
-        }, 500);
+        setTimeout(() => router.push('/home'), 500);
       } else {
-        const errorData = await response.json();
-        console.error('Login failed:', errorData);
+        const errorData = await response.json().catch(() => ({ error: 'Request failed' }));
         setError(errorData.error || 'Invalid credentials');
       }
     } catch (err) {
