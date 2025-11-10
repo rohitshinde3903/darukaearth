@@ -112,14 +112,19 @@ export default function HomePage() {
     if (!confirm('Are you sure you want to delete this project?')) return;
 
     try {
+      console.log('Deleting project:', id);
       const response = await apiClient.delete(`/api/projects/${id}/`);
+
+      console.log('Delete response status:', response.status);
 
       if (response.status === 204) {
         setSuccess('Project deleted successfully!');
         fetchProjects();
         setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError('Failed to delete project');
+        const errorText = await response.text();
+        console.error('Delete error response:', errorText);
+        setError(`Failed to delete project: ${errorText || 'Unknown error'}`);
       }
     } catch (err) {
       console.error('Delete error:', err);
