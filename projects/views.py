@@ -9,6 +9,8 @@ from .models import Project, Site
 from .serializers import ProjectSerializer, SiteSerializer, SiteGeoJSONSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 
 User = get_user_model()
 
@@ -28,6 +30,17 @@ def create_project_view(request):
             return redirect('dashboard')
         return render(request, 'create_project.html', {'errors': serializer.errors})
     return render(request, 'create_project.html')
+
+@require_http_methods(["GET"])
+def debug_request(request):
+    """Temporary debug endpoint"""
+    return JsonResponse({
+        'query_params': dict(request.GET),
+        'headers': dict(request.headers),
+        'method': request.method,
+        'path': request.path,
+        'full_path': request.get_full_path(),
+    })
 
 @api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
@@ -107,17 +120,22 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         created_by_email = self.request.query_params.get('user_email')
         
-        print(f"DEBUG ProjectViewSet: Query params: {self.request.query_params}")
-        print(f"DEBUG ProjectViewSet: user_email from params: {created_by_email}")
+        print(f"DEBUG ProjectViewSet GET: Query params: {dict(self.request.query_params)}")
+        print(f"DEBUG ProjectViewSet GET: user_email from params: {created_by_email}")
+        print(f"DEBUG ProjectViewSet GET: Full URL path: {self.request.get_full_path()}")
         
         if created_by_email:
             queryset = Project.objects.filter(created_by__email=created_by_email).order_by('-created_at')
-            print(f"DEBUG ProjectViewSet: Filtered projects count: {queryset.count()}")
+            print(f"DEBUG ProjectViewSet GET: Filtered projects count: {queryset.count()}")
+            for proj in queryset:
+                print(f"DEBUG ProjectViewSet GET: Project: {proj.id} - {proj.name} by {proj.created_by.email}")
             return queryset
         
-        # Return empty queryset if no user_email provided (more secure)
-        print("DEBUG ProjectViewSet: No user_email provided, returning empty queryset")
-        return Project.objects.none()
+        # FALLBACK: Return all projects for debugging (remove this in production after fixing)
+        print("DEBUG ProjectViewSet GET: No user_email provided, returning ALL projects for debugging")
+        all_projects = Project.objects.all().order_by('-created_at')
+        print(f"DEBUG ProjectViewSet GET: Total projects in database: {all_projects.count()}")
+        return all_projects
     
     def destroy(self, request, *args, **kwargs):
         """Handle project deletion"""
@@ -126,8 +144,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             print(f"DEBUG: Attempting to delete project {instance.id} - {instance.name}")
             print(f"DEBUG: Created by: {instance.created_by.email}")
             
-            # Instead of actually deleting, mark as inactive if you have that field
-            # Or just delete it
             self.perform_destroy(instance)
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
@@ -150,11 +166,9 @@ class SiteViewSet(viewsets.ModelViewSet):
         print(f"DEBUG SiteViewSet: Query params: {self.request.query_params}")
         print(f"DEBUG SiteViewSet: project_id: {project_id}, user_email: {user_email}")
         
-        # Filter by project if provided
         if project_id:
             queryset = queryset.filter(project_id=project_id)
         
-        # Filter by user email - only show sites from projects created by this user
         if user_email:
             try:
                 user = User.objects.get(email=user_email)
@@ -165,7 +179,6 @@ class SiteViewSet(viewsets.ModelViewSet):
                 print(f"DEBUG SiteViewSet: User not found: {user_email}")
                 return Site.objects.none()
         else:
-            # If no user_email provided, return empty for security
             print("DEBUG SiteViewSet: No user_email provided, returning empty queryset")
             return Site.objects.none()
         
@@ -185,7 +198,6 @@ class SiteViewSet(viewsets.ModelViewSet):
         created_by_email = self.request.data.get('created_by_email')
         project_id = self.request.data.get('project')
         
-        # Verify that the project belongs to the user creating the site
         if project_id and created_by_email:
             try:
                 user = User.objects.get(email=created_by_email)

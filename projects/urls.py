@@ -1,12 +1,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ProjectViewSet, SiteViewSet
+from .views import ProjectViewSet, SiteViewSet, debug_request
 
 router = DefaultRouter()
 router.register(r'projects', ProjectViewSet, basename='project')
 router.register(r'sites', SiteViewSet, basename='site')
 
 urlpatterns = [
+    path('debug/', debug_request, name='debug'),  # Add this temporarily
     path('', include(router.urls)),
 ]
 
